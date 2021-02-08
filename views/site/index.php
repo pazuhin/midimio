@@ -9,6 +9,9 @@ use yii\data\ActiveDataProvider;
 use okeanos\chartist\Chartist;
 use yii\helpers\Json;
 use yii\web\JsExpression;
+
+echo $this->render('_search', ['model' => $searchModel]);
+
 echo 'График 1';
 echo Chartist::widget([
     'tagName' => 'div',

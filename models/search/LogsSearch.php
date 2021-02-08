@@ -5,76 +5,46 @@ namespace app\models\search;
 
 use app\models\Log;
 use kartik\daterange\DateRangeBehavior;
+use ReflectionClass;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\data\SqlDataProvider;
 use yii\db\Query;
 use yii\helpers\ArrayHelper;
 
+/**
+ * Class LogsSearch
+ * @package app\models\search
+ */
 class LogsSearch extends Log
 {
-    public $createTimeRange;
-    public $createTimeStart;
-    public $createTimeEnd;
-
-    public function behaviors()
-    {
-        return [
-            [
-                'class' => DateRangeBehavior::className(),
-                'attribute' => 'createTimeRange',
-                'dateStartAttribute' => 'createTimeStart',
-                'dateEndAttribute' => 'createTimeEnd',
-            ]
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function rules()
-    {
-        return ArrayHelper::merge(parent::rules(), [
-            ['os','string'],
-            ['architecture','string'],
-            [['createTimeRange'], 'match', 'pattern' => '/^.+\s\-\s.+$/'],
-        ]);
-    }
+    public $fromDate;
+    public $toDate;
 
     /**
      * @param $params
      * @return SqlDataProvider
      * @throws \yii\db\Exception
+     * @throws \ReflectionException
      */
     public function search($params)
     {
-//        $query = new Query();
-//        $query->select('date, count(*) as cnt');
-//        $query->from('logs');
-//        $query->andWhere('os LIKE "%' . $this->os . '%"');
-//        $query->andWhere('architecture LIKE "%' . $this->architecture . '%"');
+        $classname = (new ReflectionClass($this))->getShortName();
 
-//        if (isset($params['date'])) {
-//            $date = explode( 'to', $params['date']);
-//            $query->andWhere('date>=:dateStart',[':dateStart' => $date[0]])
-//                ->andWhere('date<=:dateEnd',[':dateEnd' => $date[1]]);
-//        }
-//
-//        $query->groupBy('date');
+        $sql = 'select date, count(*) as day_count, 
+            (select url from logs t1 where t1.date = t.date group by url order by count(1) desc limit 1) as day_url, 
+            (select browser from logs t2 where t2.date = t.date group by browser order by count(1) desc limit 1) as day_browser
+            from logs t group by date';
+        if (isset($params[$classname]['fromDate']) && isset($params[$classname]['toDate'])) {
+            $sql .= ' having date between ' . $params[$classname]['fromDate'] . ' and ' . $params[$classname]['toDate'];
+        } else if (isset($params[$classname]['fromDate'])) {
+            $sql .= ' having date > ' . $params[$classname]['fromDate'];
+        } else if (isset($params[$classname]['toDate'])) {
+            $sql .= ' having date < ' . $params[$classname]['toDate'];
+        }
 
-
-//        $command = $query->createCommand();
-//        $count = Yii::$app->db->createCommand('SELECT COUNT(date) FROM logs group by date')->queryAll();
         $dataProvider = new SqlDataProvider([
-            'sql' => '
-            select date, count(*) as day_count, (
-                select url from logs t1 where t1.date = t.date group by url order by count(1) desc limit 1
-            ) as day_url, (select browser from logs t2 where t2.date = t.date group by browser order by count(1) desc limit 1) as day_browser
-            from logs t
-            group by date
-            ',
-//            'totalCount' => count($count),
-            //'params' => [':dateStart' => $date[0], ':dateEnd' => $date[1]],
+            'sql' => $sql,
             'pagination' => [
                 'pageSize' => 5
             ],
@@ -109,10 +79,6 @@ class LogsSearch extends Log
         if (!$this->validate()) {
             return $dataProvider;
         }
-
-
-//        $query->andWhere('os LIKE "%' . $this->os . '%"');
-//        $query->andWhere('architecture LIKE "%' . $this->architecture . '%"');
 
         return $dataProvider;
     }
