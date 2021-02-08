@@ -42,81 +42,61 @@ echo Chartist::widget([
     ]
 ]);
 
-echo 'График 2';
+echo 'График 2 (% от числа запросов для трех самых популярных браузеров)';
 echo Chartist::widget([
     'tagName' => 'div',
     'data' => new JsExpression(Json::encode([
         'labels' => $graphPercentArr['date'],
         'series' => [
-            $graphPercentArr['max'],
+            $graphPercentArr['sum']
         ]
     ])),
-    'chartOptions' => [
-        'options' => [
-            'seriesBarDistance' => 15
-        ],
-        'responsiveOptions' => [
-            [	'screen and (max-width: 640px)',
-                [
-                    'seriesBarDistance' => 5,
-                    'axisX' => [
-                        'labelInterpolationFnc' => new JsExpression('function (value) { return value[0]; }'),
-                    ]
-                ]
-            ]
-        ]
-    ],
     'widgetOptions' => [
         'type' => 'Bar',
-        'useClass' => 'chartist-chart'
     ],
     'htmlOptions' => [
-        'class' => 'chartist-chart ct-chart ct-golden-section',
+        'class' => 'ct-chart ct-golden-section',
+        'id' => 'chartistLineEvents',
     ]
 ]);
 
 echo GridView::widget([
     'dataProvider' => $dataProvider,
-    'formatter' => ['class' => 'yii\i18n\Formatter', 'nullDisplay' => ''],
-//    'filterModel' => $searchModel,
     'columns' => [
         [
-            'attribute' => 'Date',
+            'attribute' => 'date',
             'label' => 'Дата',
-            'format' => 'text',
-//            'filter' => '<div class="drp-container input-group"><span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>' .
-//                DateRangePicker::widget([
-//                    'name' => 'date',
-//                    'pluginOptions' => [
-//                        'locale' => [
-//                            'separator' => 'to',
-//                        ],
-//                        'opens' => 'right'
-//                    ]
-//                ]) . '</div>',
-            'content' => function ($data) {
-                return Yii::$app->formatter->asDatetime($data['date'], "php:d-M-Y");
+            'format' => 'date',
+            'class' => 'yii\grid\DataColumn',
+            'value' => function ($data) {
+                return $data['date'];
             }
         ],
         [
-            'header' => 'Число запросов',
+            'attribute' => 'day_count',
+            'format' => 'text',
+            'label' => 'Число запросов',
             'class' => 'yii\grid\DataColumn',
             'value' => function ($data) {
-                return $data['cnt'];
+                return $data['day_count'];
             },
         ],
         [
-            'header' => 'Самый популярный URL',
+            'attribute' => 'day_url',
+            'format' => 'text',
+            'label' => 'Самый популярный URL',
             'class' => 'yii\grid\DataColumn',
             'value' => function ($data) {
-                return $data['url'];
+                return $data['day_url'];
             },
         ],
         [
-            'header' => 'Самый популярный Браузер',
+            'format' => 'text',
+            'attribute' => 'day_browser',
+            'label' => 'Самый популярный Браузер',
             'class' => 'yii\grid\DataColumn',
             'value' => function ($data) {
-                return $data['browser'];
+                return $data['day_browser'];
             },
         ],
     ],

@@ -68,15 +68,16 @@ class SiteController extends Controller
         $searchModel = new LogsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         $graph = [];
+        $dayCount = [];
         foreach ($dataProvider->getModels() as $model) {
             $graph['date'][] = $model['date'];
-            $graph['cnt'][] = $model['cnt'];
+            $graph['cnt'][] = $model['day_count'];
         }
 
         $graphPercentArr = [];
-        foreach (Log::getRequestCountByThreeBrowsers($graph['date']) as $model) {
+        foreach (Log::getRequestCountByThreeBrowsers($graph['date']) as $index => $model) {
             $graphPercentArr['date'][] = $model['date'];
-            $graphPercentArr['max'][] = $model['max'];
+            $graphPercentArr['sum'][] = round($model['sum'] / $dataProvider->getModels()[$index]['day_count'] * 100, 2);
         }
 
         return $this->render('index', [

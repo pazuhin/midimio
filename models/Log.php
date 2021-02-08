@@ -42,7 +42,7 @@ class Log extends ActiveRecord
     {
         $result = [];
         foreach ($date as $item) {
-            $result[] = Yii::$app->db->createCommand('select date, max(value_occurrence) max from (SELECT date, browser, COUNT(browser) AS value_occurrence
+            $result[] = Yii::$app->db->createCommand('select date, sum(value_occurrence) sum from (SELECT date, browser, COUNT(browser) AS value_occurrence
             FROM  logs
             where date = :date
             GROUP BY date, browser
