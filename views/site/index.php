@@ -16,9 +16,9 @@ echo 'График 1';
 echo Chartist::widget([
     'tagName' => 'div',
     'data' => new JsExpression(Json::encode([
-        'labels' => $graph['date'],
+        'labels' => $graph['date'] ?? [],
         'series' => [
-            $graph['cnt'],
+            $graph['cnt'] ?? [],
         ]
     ])),
     'chartOptions' => [
@@ -49,9 +49,9 @@ echo 'График 2 (% от числа запросов для трех сам�
 echo Chartist::widget([
     'tagName' => 'div',
     'data' => new JsExpression(Json::encode([
-        'labels' => $graphPercentArr['date'],
+        'labels' => $graphPercentArr['date'] ?? [],
         'series' => [
-            $graphPercentArr['sum']
+            $graphPercentArr['sum'] ?? []
         ]
     ])),
     'widgetOptions' => [

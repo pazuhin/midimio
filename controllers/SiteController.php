@@ -66,6 +66,7 @@ class SiteController extends Controller
     public function actionIndex()
     {
         $searchModel = new LogsSearch();
+
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         $graph = [];
 
@@ -77,7 +78,7 @@ class SiteController extends Controller
         }
 
         $graphPercentArr = [];
-        if ($graph['date']) {
+        if (isset($graph['date'])) {
             foreach (Log::getRequestCountByThreeBrowsers($graph['date']) as $index => $model) {
                 $graphPercentArr['date'][] = $model['date'];
                 $graphPercentArr['sum'][] = round($model['sum'] / $dataProvider->getModels()[$index]['day_count'] * 100, 2);

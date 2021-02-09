@@ -35,13 +35,9 @@ class LogsSearch extends Log
             (select url from logs t1 where t1.date = t.date group by url order by count(1) desc limit 1) as day_url, 
             (select browser from logs t2 where t2.date = t.date group by browser order by count(1) desc limit 1) as day_browser
             from logs t group by date';
-        if (isset($params[$classname]['fromDate']) && isset($params[$classname]['toDate'])) {
-            $sql .= ' having date between ' . $params[$classname]['fromDate'] . ' and ' . $params[$classname]['toDate'];
-        } else if (isset($params[$classname]['fromDate'])) {
-            $sql .= ' having date > ' . $params[$classname]['fromDate'];
-        } else if (isset($params[$classname]['toDate'])) {
-            $sql .= ' having date < ' . $params[$classname]['toDate'];
-        }
+
+
+        $sql .= $this->getSql($params, $classname);
 
         $dataProvider = new SqlDataProvider([
             'sql' => $sql,
@@ -81,5 +77,32 @@ class LogsSearch extends Log
         }
 
         return $dataProvider;
+    }
+
+    /**
+     * @param array $params
+     * @param string $classname
+     * @return string
+     */
+    public function getSql(array $params, string $classname): string
+    {
+        $filter = '';
+
+        if (!empty($params)) {
+            $filter .= ' having ';
+            if (!empty($params[$classname]['fromDate']) && !empty($params[$classname]['toDate'])) {
+                $filter .= " date between '{$params[$classname]['fromDate']}' and '{$params[$classname]['toDate']}'";
+            } else {
+                if ($params[$classname]['fromDate'] !== '') {
+                    $filter .= " date > '{$params[$classname]['fromDate']}'";
+                }
+
+                if ($params[$classname]['toDate'] !== '') {
+                    $filter .= " date < '{$params[$classname]['toDate']}'";
+                }
+            }
+        }
+
+        return $filter;
     }
 }
